@@ -1,14 +1,11 @@
 name: Reusable Workflow To Deploy MuleSoft Application
-
+ 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      build_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
       - name: Checkout this repo
         uses: actions/checkout@v4
@@ -25,17 +22,13 @@ jobs:
         with:
           distribution: "zulu"
           java-version: 17
-
+      # - name: Build JAR
+      #   run: mvn clean package -DmuleDeploy
       - name: Publish to Exchange
         run: |
           mvn deploy --settings .maven/settings.xml -DskipMunitTests \
-          -Danypoint.username=76f002fff9c041d78a663b0a26bc008f \
-          -Danypoint.password=a8055e977df843bCB9fFB5683E52A9BA
-
-      - name: Get commit SHA
-        id: get_sha
-        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
+          -Danypoint.username="${{ secrets.USER }}" \
+          -Danypoint.password="${{ secrets.PASS }}" 
   tagversion:
     needs: build
     runs-on: ubuntu-latest
@@ -61,88 +54,83 @@ jobs:
 
 
   deploydev:
-    needs: tagversion
+    needs: build
     runs-on: ubuntu-latest
     environment: dev
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Deploy to dev
-        run: |
-          mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
-          -Danypoint.username=76f002fff9c041d78a663b0a26bc008f \
-          -Danypoint.password=a8055e977df843bCB9fFB5683E52A9BA \
-          -Danypoint.businessGroup=a62f6236-0b02-4e5f-a8eb-dc5e37aedb12 \
-          -Denv=Dev \
-          -Dappname=health-check-dev \
-          -Danypoint.platform.client_id=777df98bcd084a75bfe4b973a9e53516  \
-          -Danypoint.platform.client_secret=AF10d59Ee8C64EFb85BCc8474b2aA7eD \
-          -Dmule.env=dev \
-          -Dkey=mule
-
+    steps:    
+    - name: Checkout this repo
+      uses: actions/checkout@v4
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-       
+    - name: Deploy to dev
+      run: |
+        mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
+        -Danypoint.username="${{ secrets.USER }}" \
+        -Danypoint.password="${{ secrets.PASS }}" \
+        -Danypoint.businessGroup="${{ secrets.ANYPOINT_ORG_ID }}" \
+        -Denv="${{ secrets.ENV }}" \
+        -Dappname="${{ secrets.APP_NAME }}" \
+        -Danypoint.platform.client_id="${{ secrets.ENV_CLIENT_ID }}" \
+        -Danypoint.platform.client_secret="${{ secrets.ENV_CLIENT_SECRET }}" \
+        -Dmule.env="${{ secrets.MULE_ENV }}" \
+        -Dkey="${{ secrets.KEY }}"
+        
+         
   deployuat:
     needs: deploydev
     runs-on: ubuntu-latest
     environment: uat
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Deploy to uat
-        run: |
-          mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
-          -Danypoint.username=76f002fff9c041d78a663b0a26bc008f \
-          -Danypoint.password=a8055e977df843bCB9fFB5683E52A9BA \
-          -Danypoint.businessGroup=a62f6236-0b02-4e5f-a8eb-dc5e37aedb12 \
-          -Denv=UAT \
-          -Dappname=health-check-uat \
-          -Danypoint.platform.client_id=b5b72434253f480c8405d9cb8d853fed \
-          -Danypoint.platform.client_secret=d7d4Ff82Be8f49949661Ffd3ED535D46 \
-          -Dmule.env=qa \
-          -Dkey=mule 
-
+    steps:    
+    - name: Checkout this repo
+      uses: actions/checkout@v4
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Deploy to uat
+      run: |
+        mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
+        -Danypoint.username="${{ secrets.USER }}" \
+        -Danypoint.password="${{ secrets.PASS }}" \
+        -Danypoint.businessGroup="${{ secrets.ANYPOINT_ORG_ID }}" \
+        -Denv="${{ secrets.ENV }}" \
+        -Dappname="${{ secrets.APP_NAME }}" \
+        -Danypoint.platform.client_id="${{ secrets.ENV_CLIENT_ID }}" \
+        -Danypoint.platform.client_secret="${{ secrets.ENV_CLIENT_SECRET }}" \
+        -Dmule.env="${{ secrets.MULE_ENV }}" \
+        -Dkey="${{ secrets.KEY }}"
+  
   deployprod:
     needs: deployuat
     runs-on: ubuntu-latest
     environment: prod
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Deploy to prod
-        run: |
-          mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
-          -Danypoint.username=76f002fff9c041d78a663b0a26bc008f \
-          -Danypoint.password=a8055e977df843bCB9fFB5683E52A9BA \
-          -Danypoint.businessGroup=a62f6236-0b02-4e5f-a8eb-dc5e37aedb12 \
-          -Denv=PROD \
-          -Dappname=health-check-prod \
-          -Danypoint.platform.client_id=777df98bcd084a75bfe4b973a9e53516  \
-          -Danypoint.platform.client_secret=AF10d59Ee8C64EFb85BCc8474b2aA7eD \
-          -Dmule.env=prod \
-          -Dkey=mule 
+    steps:    
+    - name: Checkout this repo
+      uses: actions/checkout@v4
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Deploy to prod
+      run: |
+        mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
+        -Danypoint.username="${{ secrets.USER }}" \
+        -Danypoint.password="${{ secrets.PASS }}" \
+        -Danypoint.businessGroup="${{ secrets.ANYPOINT_ORG_ID }}" \
+        -Denv="${{ secrets.ENV }}" \
+        -Dappname="${{ secrets.APP_NAME }}" \
+        -Danypoint.platform.client_id="${{ secrets.ENV_CLIENT_ID }}" \
+        -Danypoint.platform.client_secret="${{ secrets.ENV_CLIENT_SECRET }}" \
+        -Dmule.env="${{ secrets.MULE_ENV }}" \
+        -Dkey="${{ secrets.KEY }}"

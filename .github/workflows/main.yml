@@ -95,7 +95,7 @@ jobs:
         run: |
           mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
           -Danypoint.username="${{ secrets.USER }}" \
-          -Danypoint.password="${{ secrets.PASS }}" \
+          -Danypoint.password="${{ secrets.PAS }}" \
           -Danypoint.businessGroup="${{ secrets.ANYPOINT_ORG_ID }}" \
           -Denv="${{ secrets.ENV }}" \
           -Dappname="${{ secrets.APP_NAME }}" \

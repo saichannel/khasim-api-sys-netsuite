@@ -48,10 +48,10 @@
 						<vCores>0.1</vCores>
 						<deploymentSettings>
 							<http>
-            							<inbound>
-                							<publicUrl>https://${appname}.sirichat.com</publicUrl>
-            							</inbound>
-        						</http>
+								<inbound>
+									<publicUrl>https://${appname}.sirichat.com</publicUrl>
+								</inbound>
+							</http>
 							<lastMileSecurity>false</lastMileSecurity>
 							<forwardSslSession>false</forwardSslSession>
 							<generateDefaultPublicUrl>false</generateDefaultPublicUrl>
@@ -65,6 +65,7 @@
 							<mule.env>${mule.env}</mule.env>
 						</properties>
 					</cloudhub2Deployment>
+					<classifier>mule-application</classifier>
 				</configuration>
 			</plugin>
 		</plugins>

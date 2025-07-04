@@ -1,0 +1,32 @@
+{
+  "configs": [
+    "global.xml",
+    "api-sys-netsuite.xml"
+  ],
+  "secureProperties": [],
+  "supportedJavaVersions": [],
+  "redeploymentEnabled": true,
+  "name": "a62f6236-0b02-4e5f-a8eb-dc5e37aedb12:Netsuite-System-api:1.0.4",
+  "minMuleVersion": "4.9.0",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "api-sys-netsuite.xml",
+        "configurations/configuration-dev.yaml",
+        "configurations/configuration-prd.yaml",
+        "configurations/configuration-prod.yaml",
+        "configurations/configuration-qa.yaml",
+        "configurations/configuration-uat.yaml",
+        "global.xml",
+        "log4j2.xml"
+      ]
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}
